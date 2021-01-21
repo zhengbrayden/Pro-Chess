@@ -1,0 +1,33 @@
+
+#container .white{
+    background-color:white
+
+}
+#container .black{
+    background-color: saddlebrown
+
+}
+#container {
+    width: 400px
+}
+#container div{
+    width: 48px; 
+    height: 48px;
+    border:1px solid black;
+    float:left;
+}
+img {
+    width:50px;
+    height:50px
+}
+.selected{
+    width: 48px; 
+    height: 48px;
+    background-color:seagreen;
+}
+#whitePromote {
+    margin-top: 350px
+}
+p {
+    margin-left: 430px
+}
