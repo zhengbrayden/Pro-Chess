@@ -50,14 +50,6 @@ function movePieceAttempt(target,captureBoolean,movingPiece) {
 }
 //moves a piece and deletes a piece if necessary
 function movePiece(target,movingPiece,pieceMoveData){
-    // let boardClone = []
-    // for (let i = 0; i <board.length; i ++){
-    //     boardClone.push([])
-    //     for (let i2 = 0; i2 <board.length; i2++){
-    //         boardClone[i].push(board[i][i2])
-    //     }
-    // }
-    //store the move before this moves data
     let piece = movingPiece.dataset.piece.substring(5)
     let oldRow = movingPiece.dataset.row
     let oldCol = movingPiece.dataset.col
@@ -69,9 +61,14 @@ function movePiece(target,movingPiece,pieceMoveData){
     }
     //only update the board to check if move is legal
     board[oldRow][oldCol] = ''
-    board[newRow][newCol] = movingPiece.dataset.piece
+    if (piece == 'Pawn' && (newRow == 7 || newRow == 0)) {
+        let newPiece = document.getElementById(turn + 'Promote').value
+        board[newRow][newCol] = turn + newPiece
+    } else {
+        board[newRow][newCol] = movingPiece.dataset.piece
+    }
     if (pieceMoveData.code == 'enpassante'){
-        globalMoveData.enpPiece = board[pieceMoveData.row][pieceMoveData.col]
+        moveData.enpPiece = board[pieceMoveData.row][pieceMoveData.col]
         board[pieceMoveData.row][pieceMoveData.col] = ''
     }
     detectMoves(true,true)
@@ -130,24 +127,22 @@ function movePiece(target,movingPiece,pieceMoveData){
             } else {
                 //the move is legal, now we can change the display board
                 lastMoved = pieceSelected
-                if (piece == 'Pawn') {
-                    if (movingPiece.dataset.numMoves == undefined){
-                        movingPiece.dataset.numMoves = 0
-                    }
-                    movingPiece.dataset.numMoves ++
-                    if (newRow == 0 || newRow == 7){
-                        let newPiece = document.getElementById(turn + 'Promote').value
-                        movingPiece.dataset.piece = turn + newPiece
-                        movingPiece.src = `pieces/${movingPiece.dataset.piece}.png`
-                    }
-                } 
+                if (piece == 'Pawn' && (newRow == 7 || newRow == 0)) {
+                    let newPiece = document.getElementById(turn + 'Promote').value
+                    movingPiece.dataset.piece = turn + newPiece
+                    movingPiece.src = `pieces/${movingPiece.dataset.piece}.png`
+                }
+                if (movingPiece.dataset.numMoves == undefined){
+                    movingPiece.dataset.numMoves = 0
+                }
+                movingPiece.dataset.numMoves ++
                 movingPiece.dataset.row = newRow
                 movingPiece.dataset.col = newCol
                 movingPiece.id = `${newRow}/${newCol}`
                 movingPiece.classList.remove('selected')
                 pieceSelected=undefined
                 target.innerHTML = ''
-                if (pieceMoveData.code == 'enpassate') {
+                if (pieceMoveData.code == 'enpassante') {
                     pieceMoveData.target.remove()
                 }
                 target.append(movingPiece)
@@ -230,8 +225,19 @@ function detectMate(sideColor,white,black){
                         let dist = Math.round(Math.sqrt(distRow ** 2 + distCol **2) * 100)/100
                         if (color == sideColor){
                             if (!testMove(true)){
+                                //detectMoves so we have the correct detectMoves data at the end
+                                detectMoves(true,true)
+                                console.log('black' + checkBlack)
+                                console.log( blackAttacks)
+                                console.log('white' + checkWhite)
+                                console.log(whiteAttacks)
                                 return false
                             } else if (!testMove(false)){
+                                detectMoves(true,true)
+                                console.log('black' + checkBlack)
+                                console.log( blackAttacks)
+                                console.log('white' + checkWhite)
+                                console.log(whiteAttacks)
                                 return false
                             }
                             function testMove(captureBoolean){
@@ -393,7 +399,7 @@ function castle(distRow,absRow,oldRow,distCol,absCol,oldCol,enemyAttacks) {
     if (distCol < 0){
         //moves the castle piece if castleChecker function goes through
         if (castleChecker(-4,4,enemyAttacks) && !document.getElementById(`${oldRow}/${0}`).dataset.numMoves){
-            movePiece(document.getElementById(`board-${oldRow}/${oldCol - 1}`), document.getElementById(`${oldRow}/${0}`))
+            movePiece(document.getElementById(`board-${oldRow}/${oldCol - 1}`), document.getElementById(`${oldRow}/${0}`),true)
             if (turn == 'white'){
                 turn = 'black'
             } else {
@@ -404,7 +410,7 @@ function castle(distRow,absRow,oldRow,distCol,absCol,oldCol,enemyAttacks) {
     //castle right side
     } else {
         if (castleChecker(3,3) && !document.getElementById(`${oldRow}/${7}`).dataset.numMoves){
-            movePiece(document.getElementById(`board-${oldRow}/${oldCol +1}`),document.getElementById(`${oldRow}/${7}`))
+            movePiece(document.getElementById(`board-${oldRow}/${oldCol +1}`),document.getElementById(`${oldRow}/${7}`),true)
             if (turn == 'white'){
                 turn = 'black'
             } else {
